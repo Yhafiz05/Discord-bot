@@ -3,7 +3,7 @@
 //Evenst represents the events that the bot can listen.
 //GatewayIntentBits (permissions) are all the the type of events that the bot can follows
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { token } = require('../config/config.json');
+const { token } = require('./config/config.json');
 
 //Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -21,20 +21,16 @@ client.login(token);
 const fs = require('node:fs');
 //Import the node's native path module 
 const path = require('node:path');
-const { sourceMapsEnabled } = require('node:process');
 
 client.commands = new Collection();
-//Contrusct a path relate to the OS to 'commands'
+//Construct a path relate to the OS to 'commands'
 const foldersPath = path.join(__dirname, 'commands');
-console.log(foldersPath);
 //Read all directories in foldersPath and put theses in an array
 const commandFolders = fs.readdirSync(foldersPath);
   
 for (const folder of commandFolders) {
 	const commandsPath = path.join(foldersPath, folder);
-  console.log(commandsPath);
 	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-  console.log(commandFiles);
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
 		const command = require(filePath);
@@ -46,3 +42,26 @@ for (const folder of commandFolders) {
 		}
 	}
 }
+
+client.on(Events.InteractionCreate, async (interaction) => {
+	if(!interaction.isChatInputCommand()) return;
+
+	const command = interaction.client.commands.get(interaction.commandName);
+
+	if(!command){
+		console.error(`No matching ${interaction.commandName} was found`);
+		return;
+	}
+	
+	try{
+		await command.execute(interaction);
+	}catch(error){
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		} else {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	}
+
+});
