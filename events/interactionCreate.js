@@ -12,6 +12,31 @@ module.exports = {
         return;
       } 
 
+      const { cooldowns } = interaction.client;
+
+      if(!cooldowns.has(command.data.name)){
+        cooldowns.set(command.data.name,new Collection());
+      }
+      
+      const now = Date.now();
+      const timestamps = cooldowns.get(command.data.name);
+      const defaultCooldownDuration = 3;
+      const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1_000;
+      
+      if(timestamps.has(interaction.user.id)){
+        const expiration = timestamps.get(intercaction.user.id) + cooldownAmount;
+      
+        if(now < expiration){
+          const expirationTimestamp = Math.round(expiration/1_000);
+          return interaction.reply({
+            content : `Please wait, you are on a cooldown for \'${command.data.name}\'. You can use it again in <t:${expirationTimestamp}:R>`, ephemeral : true
+          });
+        }
+      }
+
+      timestamps.set(interaction.user.id,now);
+      setTimeout(() => timestamps.delete(interaction.user.id),cooldownAmount);
+
       try{
         await command.execute(interaction);
       }catch(error){

@@ -13,6 +13,9 @@ const interactionCreate = require('./events/interactionCreate');
 //Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
+//Define client cooldowns
+client.cooldowns = new Collection();
+
 client.commands = new Collection();
 //Construct a path relate to the OS to 'commands'
 const foldersPath = path.join(__dirname, 'commands');
@@ -47,34 +50,5 @@ for(const file of eventFiles){
 	}
 }
 
-//Define client cooldowns
-client.cooldowns = new Collection();
-const { cooldowns } = interaction.client;
-
-if(!cooldowns.has(command.data.name)){
-	cooldowns.set(command.data.name,new Collection());
-}
-
-const now = Date.now();
-const timestamps = cooldowns.get(command.data.name);
-const defaultCooldownDuration = 3;
-const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1_000;
-
-if(timestamps.has(interaction.user.id)){
-	const expiration = timestamps.get(intercaction.user.id) + cooldownAmount;
-
-	if(now < expiration){
-		const expirationTimestamp = Math.round(expiration/1_000);
-		return interaction.reply({
-			content : `Please wait, you are on a cooldown for \'${command.data.name}\'. You can use it again in <t:${expirationTimestamp}:R>`, ephemeral : true
-		});
-	}
-}
-try{
-	timestamps.set(interaction.user.id,now);
-	setTimeout(() => timestamps.delete(interaction.user.id),cooldownAmount);
-}catch(error){
-	console.error(error);
-}
 
 client.login(token);
