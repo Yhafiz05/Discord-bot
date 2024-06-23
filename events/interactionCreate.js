@@ -1,4 +1,4 @@
-const {Events} = require('discord.js');
+const {Events,Collection} = require('discord.js');
 
 module.exports = {
   name : Events.InteractionCreate,
@@ -24,7 +24,7 @@ module.exports = {
       const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1_000;
       
       if(timestamps.has(interaction.user.id)){
-        const expiration = timestamps.get(intercaction.user.id) + cooldownAmount;
+        const expiration = timestamps.get(interaction.user.id) + cooldownAmount;
       
         if(now < expiration){
           const expirationTimestamp = Math.round(expiration/1_000);
