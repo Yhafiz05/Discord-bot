@@ -8,7 +8,6 @@ const { token } = require('./config/config.json');
 const fs = require('node:fs');
 //Import the node's native path module 
 const path = require('node:path');
-const interactionCreate = require('./events/interactionCreate');
 
 //Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
